@@ -1,5 +1,7 @@
 class AnimalsController < ApplicationController
-  before_action :set_animal, only: [:show, :update, :destroy]
+  include AnimalHelper
+  
+  before_action :set_animal, only: [:show]
 
   # GET /animals
   def index
@@ -14,38 +16,25 @@ class AnimalsController < ApplicationController
   end
 
   # POST /animals
-  def create
-    @animal = Animal.new(animal_params)
+  def simple
+    birthdays = params[:birthdays]
 
-    if @animal.save
-      render json: @animal, status: :created, location: @animal
-    else
-      render json: @animal.errors, status: :unprocessable_entity
+    @animal_codes = []
+
+    birthdays.each do |birthday|
+      animal_code = get_animal_code birthday
+
+      animal_code_with_birthday = {birthday: birthday, animal_code: animal_code}
+
+      @animal_codes.push animal_code_with_birthday
     end
-  end
 
-  # PATCH/PUT /animals/1
-  def update
-    if @animal.update(animal_params)
-      render json: @animal
-    else
-      render json: @animal.errors, status: :unprocessable_entity
-    end
-  end
-
-  # DELETE /animals/1
-  def destroy
-    @animal.destroy
+    render json: @animal_codes, status: :ok
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_animal
       @animal = Animal.find(params[:id])
-    end
-
-    # Only allow a list of trusted parameters through.
-    def animal_params
-      params.require(:animal).permit(:name, :t12, :t3, :t4, :rhythm, :wangel, :bdebil)
     end
 end
